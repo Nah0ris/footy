@@ -1,106 +1,179 @@
 /**
- * goal.js
- * Logic for the interactive goal canvas in the Shot xGOT panel.
+ * goal.js — Goal frame canvas for xGOT panel and player shot map.
+ * Goal: y = [36, 44] (8 yards wide), z = [0, 2.44] metres.
  */
 
+// ── Constants ───────────────────────────────────────────────────────────────
+const GOAL_SB_Y_MIN  = 36, GOAL_SB_Y_MAX  = 44;
+const GOAL_SB_Z_MAX  = 2.44;
+const GOAL_PAD_X     = 48;  // canvas px from left/right for posts
+const GOAL_PAD_TOP   = 22;  // canvas px from top for crossbar
+const GOAL_PAD_BOT   = 8;   // canvas px from bottom for ground
+
+// ── Goal Frame Renderer ─────────────────────────────────────────────────────
 function drawGoalFrame(canvasId, shots = []) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
+    const W = canvas.width;
+    const H = canvas.height;
 
-    // StatsBomb Goal: y=[36, 44] (width 8), z=[0, 2.44]
-    
-    // Clear
-    ctx.fillStyle = '#131929';
-    ctx.fillRect(0, 0, w, h);
+    // Inner frame coords (where the goal is drawn)
+    const fx  = GOAL_PAD_X;
+    const fy  = GOAL_PAD_TOP;
+    const fw  = W - GOAL_PAD_X * 2;
+    const fh  = H - GOAL_PAD_TOP - GOAL_PAD_BOT;
 
-    // Draw Posts & Crossbar
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 8;
-    ctx.strokeRect(40, 20, w - 80, h - 20); // Border frame
-    
-    // Bottom "Ground" line
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, h - 2);
-    ctx.lineTo(w, h - 2);
-    ctx.stroke();
+    ctx.clearRect(0, 0, W, H);
 
-    // Draw existing shots (for player map)
+    // Background — light grey like a pitch end
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#e8f5e9');
+    grad.addColorStop(1, '#c8e6c9');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Ground line
+    ctx.fillStyle = '#8d6e63';
+    ctx.fillRect(0, H - GOAL_PAD_BOT, W, GOAL_PAD_BOT);
+    ctx.fillStyle = '#6d9b3a';
+    ctx.fillRect(0, H - GOAL_PAD_BOT - 4, W, 4);
+
+    // Net background (inside the frame)
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillRect(fx, fy, fw, fh);
+
+    // Net grid lines
+    ctx.strokeStyle = 'rgba(180,180,180,0.5)';
+    ctx.lineWidth = 0.5;
+    const netCols = 14, netRows = 8;
+    for (let i = 1; i < netCols; i++) {
+        const nx = fx + (fw / netCols) * i;
+        ctx.beginPath(); ctx.moveTo(nx, fy); ctx.lineTo(nx, fy + fh); ctx.stroke();
+    }
+    for (let j = 1; j < netRows; j++) {
+        const ny = fy + (fh / netRows) * j;
+        ctx.beginPath(); ctx.moveTo(fx, ny); ctx.lineTo(fx + fw, ny); ctx.stroke();
+    }
+
+    // Posts & Crossbar (white with dark shadow)
+    ctx.shadowColor  = 'rgba(0,0,0,0.25)';
+    ctx.shadowBlur   = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.fillStyle   = '#ffffff';
+    ctx.strokeStyle = '#cccccc';
+    ctx.lineWidth   = 1;
+
+    const postW = 6;
+    // Left post
+    ctx.fillRect(fx - postW / 2, fy, postW, fh + GOAL_PAD_BOT);
+    // Right post
+    ctx.fillRect(fx + fw - postW / 2, fy, postW, fh + GOAL_PAD_BOT);
+    // Crossbar
+    ctx.fillRect(fx - postW / 2, fy - postW / 2, fw + postW, postW);
+    ctx.shadowBlur = 0; ctx.shadowOffsetX = 0;
+
+    // Shot markers
     shots.forEach(s => {
         if (s.end_y === null || s.end_z === null) return;
-        
-        const sx = mapRange(s.end_y, 36, 44, 40, w - 40);
-        const sz = mapRange(s.end_z, 0, 2.44, h - 2, 20);
-        
-        ctx.beginPath();
+        if (s.end_y < GOAL_SB_Y_MIN || s.end_y > GOAL_SB_Y_MAX) return;
+        if (s.end_z < 0 || s.end_z > GOAL_SB_Z_MAX) return;
+
+        const px = mapRange(s.end_y, GOAL_SB_Y_MIN, GOAL_SB_Y_MAX, fx, fx + fw);
+        const py = mapRange(s.end_z, 0, GOAL_SB_Z_MAX, fy + fh, fy);
+        const r  = Math.max(4, (s.xg || 0.05) * 18);
+
         if (s.outcome === 'Goal') {
-            ctx.fillStyle = '#10b981';
-            ctx.arc(sx, sz, 4 + (s.xg * 10), 0, Math.PI * 2);
+            ctx.beginPath();
+            ctx.arc(px, py, r, 0, Math.PI * 2);
+            ctx.fillStyle   = 'rgba(15,121,72,0.75)';
             ctx.fill();
+            ctx.strokeStyle = '#0f7948';
+            ctx.lineWidth   = 1.5;
+            ctx.stroke();
         } else {
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 2;
-            const size = 3 + (s.xg * 5);
-            ctx.moveTo(sx - size, sz - size);
-            ctx.lineTo(sx + size, sz + size);
-            ctx.moveTo(sx + size, sz - size);
-            ctx.lineTo(sx - size, sz + size);
+            const hs = r * 0.6;
+            ctx.strokeStyle = 'rgba(192,57,43,0.8)';
+            ctx.lineWidth   = 2;
+            ctx.beginPath();
+            ctx.moveTo(px - hs, py - hs); ctx.lineTo(px + hs, py + hs);
+            ctx.moveTo(px + hs, py - hs); ctx.lineTo(px - hs, py + hs);
             ctx.stroke();
         }
     });
 }
 
-const GOAL_CANVAS = document.getElementById('goal-canvas');
-if (GOAL_CANVAS) {
-    GOAL_CANVAS.addEventListener('click', async (e) => {
-        const rect = GOAL_CANVAS.getBoundingClientRect();
-        const cx = e.clientX - rect.left;
-        const cy = e.clientY - rect.top;
+// ── Coordinate helpers for goal canvas ─────────────────────────────────────
+function canvasToGoalSB(canvas, cx, cy) {
+    const W  = canvas.width;
+    const H  = canvas.height;
+    const fx = GOAL_PAD_X;
+    const fy = GOAL_PAD_TOP;
+    const fw = W - GOAL_PAD_X * 2;
+    const fh = H - GOAL_PAD_TOP - GOAL_PAD_BOT;
+    return {
+        end_y: mapRange(cx, fx, fx + fw, GOAL_SB_Y_MIN, GOAL_SB_Y_MAX),
+        end_z: mapRange(cy, fy + fh, fy, 0, GOAL_SB_Z_MAX),
+    };
+}
 
-        // Constraint to within frame
-        const w = GOAL_CANVAS.width;
-        const h = GOAL_CANVAS.height;
-        
-        // StatsBomb conversion
-        // y: [36, 44], z: [0, 2.44]
-        const sbY = mapRange(cx, 40, w - 40, 36, 44);
-        const sbZ = mapRange(cy, h - 2, 20, 0, 2.44);
+// ── xGOT Panel Interaction ──────────────────────────────────────────────────
+(function () {
+    const canvas = document.getElementById('goal-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let markerPos = null;
 
-        if (sbY < 36 || sbY > 44 || sbZ < 0 || sbZ > 2.44) return;
+    canvas.addEventListener('click', async (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const cx   = (e.clientX - rect.left) * (canvas.width  / rect.width);
+        const cy   = (e.clientY - rect.top)  * (canvas.height / rect.height);
+        const sb   = canvasToGoalSB(canvas, cx, cy);
 
-        // Draw Dot
+        if (sb.end_y < GOAL_SB_Y_MIN || sb.end_y > GOAL_SB_Y_MAX) return;
+        if (sb.end_z < 0             || sb.end_z > GOAL_SB_Z_MAX)  return;
+
+        markerPos = { cx, cy, ...sb };
         drawGoalFrame('goal-canvas');
-        const ctx = GOAL_CANVAS.getContext('2d');
-        ctx.fillStyle = '#f59e0b';
-        ctx.beginPath();
-        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-        ctx.fill();
+        drawXGOTMarker(ctx, cx, cy);
 
-        // Fetch xGOT
-        const result = await apiPost('/api/xgot', { end_y: sbY, end_z: sbZ });
-        displayXGOTResult(result, sbY, sbZ);
+        const data = await apiPost('/api/xgot', { end_y: sb.end_y, end_z: sb.end_z });
+        if (data.error) return;
+        renderXGOTResult(data, sb.end_y, sb.end_z);
     });
-}
 
-function displayXGOTResult(data, y, z) {
-    const card = document.getElementById('xgot-result');
-    card.classList.remove('hidden');
+    function drawXGOTMarker(ctx, cx, cy) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+        ctx.fillStyle   = 'rgba(26,86,219,0.9)';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth   = 2;
+        ctx.stroke();
+    }
 
-    document.getElementById('xgot-val').textContent = data.xgot;
-    document.getElementById('xgot-pct').textContent = data.xgot_pct + '%';
-    
-    // Simple zone text
-    let h = (y < 36 + 8/3) ? 'Left' : (y < 36 + 16/3 ? 'Center' : 'Right');
-    let v = (z < 1.22) ? 'Low' : 'High';
-    document.getElementById('xgot-zone').textContent = `${v} ${h}`;
+    function renderXGOTResult(data, endY, endZ) {
+        document.getElementById('xgot-placeholder').classList.add('hidden');
+        const res = document.getElementById('xgot-result');
+        res.classList.remove('hidden');
 
-    const bar = document.getElementById('xgot-bar');
-    bar.style.width = data.xgot_pct + '%';
-    document.getElementById('xgot-bar-label').textContent = `Predicted xGOT: ${data.xgot}`;
-}
+        document.getElementById('xgot-val').textContent      = data.xgot;
+        document.getElementById('xgot-save-pct').textContent = (100 - data.xgot_pct).toFixed(1) + '%';
 
-drawGoalFrame('goal-canvas');
+        const h = endY < 36 + 8/3 ? 'Left' : (endY < 36 + 16/3 ? 'Center' : 'Right');
+        const v = endZ < 1.22 ? 'Low' : 'High';
+        document.getElementById('xgot-zone').textContent = `${v} ${h}`;
+
+        const bar = document.getElementById('xgot-bar');
+        bar.style.width = data.xgot_pct + '%';
+        bar.className   = 'bar-fill';
+        if (data.xgot >= 0.7)      bar.classList.add('high');
+        else if (data.xgot >= 0.4) bar.classList.add('mid');
+        else                        bar.classList.add('low');
+
+        document.getElementById('xgot-bar-label').textContent = data.xgot_pct + '%';
+    }
+
+    drawGoalFrame('goal-canvas');
+    window.drawGoalFrame = drawGoalFrame;
+})();

@@ -1,21 +1,28 @@
 /**
- * teams.js
- * Logic for the team leaderboard table.
+ * teams.js — Sortable team leaderboard.
  */
 
-const TEAMS_BTN = document.getElementById('teams-load-btn');
-const TEAMS_TBODY = document.getElementById('teams-tbody');
+(function () {
+    const loadBtn = document.getElementById('teams-load-btn');
+    const tbody   = document.getElementById('teams-tbody');
+    const sortSel = document.getElementById('teams-sort');
+    const orderSel= document.getElementById('teams-order');
 
-async function loadTeams() {
-    const sort = document.getElementById('teams-sort').value;
-    const order = document.getElementById('teams-order').value;
+    loadBtn.addEventListener('click', loadTeams);
 
-    TEAMS_TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem;">Loading...</td></tr>';
+    async function loadTeams() {
+        const sort  = sortSel.value;
+        const order = orderSel.value;
 
-    const data = await apiGet(`/api/teams?sort=${sort}&order=${order}`);
-    if (data.teams) {
-        TEAMS_TBODY.innerHTML = data.teams.map((t, i) => {
-            const diffClass = t.difference > 0 ? 'positive-diff' : (t.difference < 0 ? 'negative-diff' : '');
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:#9ca3af;">Loading...</td></tr>`;
+
+        const data = await apiGet(`/api/teams?sort=${sort}&order=${order}`);
+        if (!data.teams) return;
+
+        tbody.innerHTML = data.teams.map((t, i) => {
+            const diff      = t.difference;
+            const diffClass = diff > 0 ? 'pos-diff' : diff < 0 ? 'neg-diff' : '';
+            const diffSign  = diff > 0 ? '+' : '';
             return `
                 <tr>
                     <td>${i + 1}</td>
@@ -23,11 +30,8 @@ async function loadTeams() {
                     <td>${t.total_shots}</td>
                     <td>${t.total_goals}</td>
                     <td>${t.total_xg}</td>
-                    <td class="${diffClass}">${t.difference > 0 ? '+' : ''}${t.difference}</td>
-                </tr>
-            `;
+                    <td class="${diffClass}">${diffSign}${diff}</td>
+                </tr>`;
         }).join('');
     }
-}
-
-TEAMS_BTN.addEventListener('click', loadTeams);
+})();

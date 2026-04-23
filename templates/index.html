@@ -3,149 +3,202 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="Interactive xG and xGOT football analytics tool using StatsBomb World Cup 2022 data." />
-  <title>xG Explorer · WC 2022</title>
+  <meta name="description" content="Interactive xG and xGOT football analytics platform. World Cup 2022 StatsBomb data." />
+  <title>xG / xGOT · Football Analytics</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
 
-<!-- ── SIDEBAR ──────────────────────────────────────────────────────────── -->
-<nav id="sidebar">
-  <div class="brand">
-    <div class="brand-logo">
-      <span class="brand-xg">xG</span><span class="brand-slash">/</span><span class="brand-xgot">xGOT</span>
-    </div>
-    <p class="brand-sub">WC 2022 · StatsBomb</p>
+<!-- ── Header ───────────────────────────────────────────────────────────── -->
+<header id="header">
+  <button id="hamburger" aria-label="Toggle sidebar" title="Toggle sidebar">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="brand-header">
+    <span class="bh-xg">xG</span>
+    <span class="bh-slash">/</span>
+    <span class="bh-xgot">xGOT</span>
+    <span class="bh-sub">Football Analytics · WC 2022</span>
   </div>
+</header>
 
-  <ul class="menu" role="menubar">
-    <li class="menu-item active" data-panel="panel-xg" role="menuitem" tabindex="0" id="nav-xg">
-      <span class="menu-icon">⚽</span><span class="menu-label">Shot xG</span>
-    </li>
-    <li class="menu-item" data-panel="panel-xgot" role="menuitem" tabindex="0" id="nav-xgot">
-      <span class="menu-icon">🎯</span><span class="menu-label">Shot xGOT</span>
-    </li>
-    <li class="menu-item" data-panel="panel-player" role="menuitem" tabindex="0" id="nav-player">
-      <span class="menu-icon">👤</span><span class="menu-label">Player Stats</span>
-    </li>
-    <li class="menu-item" data-panel="panel-teams" role="menuitem" tabindex="0" id="nav-teams">
-      <span class="menu-icon">🏆</span><span class="menu-label">Team Table</span>
-    </li>
-    <li class="menu-item" data-panel="panel-zones" role="menuitem" tabindex="0" id="nav-zones">
-      <span class="menu-icon">🗺️</span><span class="menu-label">Zone Map</span>
-    </li>
-  </ul>
-
-  <div class="sidebar-footer">World Cup 2022 · Open Data</div>
+<!-- ── Sidebar ───────────────────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="sidebar-inner">
+    <ul class="menu" role="menubar">
+      <li class="menu-item active" data-panel="panel-xg" role="menuitem" id="nav-xg">
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span class="menu-label">Shot xG</span>
+      </li>
+      <li class="menu-item" data-panel="panel-xgot" role="menuitem" id="nav-xgot">
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+        <span class="menu-label">Shot xGOT</span>
+      </li>
+      <li class="menu-item" data-panel="panel-player" role="menuitem" id="nav-player">
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="menu-label">Player Stats</span>
+      </li>
+      <li class="menu-item" data-panel="panel-teams" role="menuitem" id="nav-teams">
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="menu-label">Team Table</span>
+      </li>
+      <li class="menu-item" data-panel="panel-zones" role="menuitem" id="nav-zones">
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="menu-label">Zone Map</span>
+      </li>
+    </ul>
+    <div class="sidebar-footer">StatsBomb Open Data</div>
+  </div>
 </nav>
 
-<!-- ── MAIN CONTENT ─────────────────────────────────────────────────────── -->
+<!-- ── Main ──────────────────────────────────────────────────────────────── -->
 <main id="main">
 
-  <!-- 1 · SHOT xG -->
+  <!-- 1 · Shot xG -->
   <section id="panel-xg" class="panel active">
-    <header class="panel-header">
+    <div class="panel-header">
       <h1 class="panel-title">Shot xG <span class="tag">Expected Goals</span></h1>
-      <p class="panel-desc">Click anywhere on the pitch to place a shot. The model estimates its probability of becoming a goal based on angle and distance.</p>
-    </header>
-
-    <div class="canvas-wrap" id="xg-canvas-wrap">
-      <canvas id="pitch-canvas" width="700" height="430"></canvas>
-      <p class="canvas-hint">Click on the pitch to place a shot →</p>
+      <p class="panel-desc">Click anywhere on the pitch to place a shot. Outputs the probability of it becoming a goal based on angle and distance.</p>
     </div>
 
-    <div id="xg-result" class="result-card hidden">
-      <div class="result-grid">
-        <div class="result-item accent">
-          <span class="result-label">xG</span>
-          <span class="result-value mono" id="xg-val">—</span>
-        </div>
-        <div class="result-item">
-          <span class="result-label">Probability</span>
-          <span class="result-value mono" id="xg-pct">—</span>
-        </div>
-        <div class="result-item">
-          <span class="result-label">Angle</span>
-          <span class="result-value mono" id="xg-angle">—</span>
-        </div>
-        <div class="result-item">
-          <span class="result-label">Distance</span>
-          <span class="result-value mono" id="xg-dist">—</span>
-        </div>
+    <div class="xg-layout">
+      <!-- Left: Pitch Canvas -->
+      <div class="canvas-wrap">
+        <canvas id="pitch-canvas" width="680" height="410"></canvas>
+        <p class="canvas-hint">Click on the pitch to place a shot</p>
       </div>
-      <div class="bar-track">
-        <div class="bar-fill" id="xg-bar"></div>
-        <span class="bar-label" id="xg-bar-label"></span>
+
+      <!-- Right: Result Panel -->
+      <div id="xg-result-panel" class="result-panel">
+        <div class="result-placeholder" id="xg-placeholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          <p>Click the pitch<br>to calculate xG</p>
+        </div>
+        <div id="xg-result" class="hidden">
+          <p class="result-title">Shot Analysis</p>
+          <div class="metric-row">
+            <span class="metric-label">Expected Goals (xG)</span>
+            <span class="metric-value accent" id="xg-val">—</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Probability</span>
+            <span class="metric-value" id="xg-pct">—</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Shooting Angle</span>
+            <span class="metric-value" id="xg-angle">—</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Distance to Goal</span>
+            <span class="metric-value" id="xg-dist">—</span>
+          </div>
+          <div class="xg-bar-section">
+            <div class="xg-bar-header">
+              <span>Low</span><span id="xg-bar-label"></span><span>High</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" id="xg-bar"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 2 · SHOT xGOT -->
+  <!-- 2 · Shot xGOT -->
   <section id="panel-xgot" class="panel">
-    <header class="panel-header">
-      <h1 class="panel-title">Shot xGOT <span class="tag">Expected Goals on Target</span></h1>
-      <p class="panel-desc">Click inside the goal frame to see the probability of beating the goalkeeper, based on shot placement.</p>
-    </header>
-
-    <div class="canvas-wrap" id="xgot-canvas-wrap">
-      <canvas id="goal-canvas" width="560" height="220"></canvas>
-      <p class="canvas-hint">Click inside the goal frame →</p>
+    <div class="panel-header">
+      <h1 class="panel-title">Shot xGOT <span class="tag">Goals on Target</span></h1>
+      <p class="panel-desc">Click inside the goal frame to estimate the probability of beating the goalkeeper based on shot placement.</p>
     </div>
 
-    <div id="xgot-result" class="result-card hidden">
-      <div class="result-grid">
-        <div class="result-item accent">
-          <span class="result-label">xGOT</span>
-          <span class="result-value mono" id="xgot-val">—</span>
-        </div>
-        <div class="result-item">
-          <span class="result-label">Probability</span>
-          <span class="result-value mono" id="xgot-pct">—</span>
-        </div>
-        <div class="result-item">
-          <span class="result-label">Zone</span>
-          <span class="result-value mono" id="xgot-zone">—</span>
-        </div>
+    <div class="xgot-layout">
+      <!-- Left: Goal Canvas -->
+      <div class="canvas-wrap">
+        <canvas id="goal-canvas" width="560" height="220"></canvas>
+        <p class="canvas-hint">Click inside the goal frame</p>
       </div>
-      <div class="bar-track">
-        <div class="bar-fill" id="xgot-bar"></div>
-        <span class="bar-label" id="xgot-bar-label"></span>
+
+      <!-- Right: Result Panel -->
+      <div id="xgot-result-panel" class="result-panel">
+        <div class="result-placeholder" id="xgot-placeholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="18" height="12" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+          <p>Click the goal frame<br>to calculate xGOT</p>
+        </div>
+        <div id="xgot-result" class="hidden">
+          <p class="result-title">Placement Analysis</p>
+          <div class="metric-row">
+            <span class="metric-label">Expected GoT (xGOT)</span>
+            <span class="metric-value accent" id="xgot-val">—</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Save Probability</span>
+            <span class="metric-value" id="xgot-save-pct">—</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Zone</span>
+            <span class="metric-value" id="xgot-zone">—</span>
+          </div>
+          <div class="xg-bar-section">
+            <div class="xg-bar-header">
+              <span>Easier</span><span id="xgot-bar-label"></span><span>Harder</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" id="xgot-bar"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 3 · PLAYER STATS -->
+  <!-- 3 · Player Stats -->
   <section id="panel-player" class="panel">
-    <header class="panel-header">
-      <h1 class="panel-title">Player Stats <span class="tag">xG · xGOT · Goals</span></h1>
-      <p class="panel-desc">Search a player from WC 2022 to see their shot map and expected vs actual performance.</p>
-    </header>
+    <div class="panel-header">
+      <h1 class="panel-title">Player Stats <span class="tag">xG Analysis</span></h1>
+      <p class="panel-desc">Search any player from WC 2022. See expected vs actual performance and their shot map.</p>
+    </div>
 
     <div class="search-wrap">
-      <input type="text" id="player-input" class="search-input" placeholder="Search player name…" autocomplete="off" />
+      <input type="text" id="player-input" class="search-input" placeholder="Search player name..." autocomplete="off" />
       <ul id="player-suggestions" class="suggestions hidden"></ul>
     </div>
 
     <div id="player-result" class="hidden">
-      <div class="stat-grid" id="player-stat-grid"></div>
-      <div class="canvas-wrap" style="margin-top: 1.5rem;">
-        <canvas id="player-goal-canvas" width="560" height="220"></canvas>
-        <p class="canvas-hint">Circles = Goals · ✕ = Saved / Off Target · Size ∝ xG</p>
+      <div class="player-layout">
+        <!-- Left: Shot Map -->
+        <div>
+          <div class="canvas-wrap">
+            <canvas id="player-goal-canvas" width="560" height="220"></canvas>
+            <p class="canvas-hint">Filled circle = Goal &nbsp;|&nbsp; Cross = No goal &nbsp;|&nbsp; Size proportional to xG</p>
+          </div>
+        </div>
+        <!-- Right: Player Card -->
+        <div class="player-card" id="player-card">
+          <div class="player-card-header">
+            <div class="player-avatar" id="player-avatar"></div>
+            <div>
+              <div class="player-name" id="player-name-display"></div>
+              <div class="player-team" id="player-team-display"></div>
+            </div>
+          </div>
+          <ul class="player-stats-list" id="player-stats-list"></ul>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 4 · TEAM TABLE -->
+  <!-- 4 · Team Table -->
   <section id="panel-teams" class="panel">
-    <header class="panel-header">
-      <h1 class="panel-title">Team Table <span class="tag">Over / Under Performers</span></h1>
-      <p class="panel-desc">All 32 WC 2022 teams ranked by xG difference (Actual Goals − xG). Positive = over-performed expectations.</p>
-    </header>
+    <div class="panel-header">
+      <h1 class="panel-title">Team Table <span class="tag">Over / Under Performance</span></h1>
+      <p class="panel-desc">All 32 WC 2022 teams ranked by xG difference (Actual Goals − xG). Positive values indicate over-performance.</p>
+    </div>
 
     <div class="controls-row">
-      <label class="control-label">Sort by</label>
+      <span class="control-label">Sort by</span>
       <select id="teams-sort" class="select-input">
         <option value="difference">xG Difference</option>
         <option value="total_xg">Total xG</option>
@@ -156,7 +209,7 @@
         <option value="desc">Highest first</option>
         <option value="asc">Lowest first</option>
       </select>
-      <button id="teams-load-btn" class="btn">Load</button>
+      <button id="teams-load-btn" class="btn">Load Table</button>
     </div>
 
     <div class="table-wrap">
@@ -166,24 +219,28 @@
             <th>#</th><th>Team</th><th>Shots</th><th>Goals</th><th>xG</th><th>Difference</th>
           </tr>
         </thead>
-        <tbody id="teams-tbody"></tbody>
+        <tbody id="teams-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:2rem;color:#9ca3af;">Click "Load Table" to fetch data</td></tr>
+        </tbody>
       </table>
     </div>
   </section>
 
-  <!-- 5 · ZONE MAP -->
+  <!-- 5 · Zone Map -->
   <section id="panel-zones" class="panel">
-    <header class="panel-header">
+    <div class="panel-header">
       <h1 class="panel-title">Zone Map <span class="tag">Conversion Rates</span></h1>
-      <p class="panel-desc">Goal-frame heat map showing conversion rate per zone across the entire tournament.</p>
-    </header>
+      <p class="panel-desc">Goal-frame heat map showing shot conversion rate per zone across the entire tournament.</p>
+    </div>
 
-    <button id="zones-load-btn" class="btn">Load Zone Data</button>
+    <div class="controls-row">
+      <button id="zones-load-btn" class="btn">Load Zone Data</button>
+    </div>
 
-    <div class="canvas-wrap" style="margin-top: 1.5rem;">
+    <div class="canvas-wrap" style="display:inline-block;">
       <canvas id="zones-canvas" width="560" height="220"></canvas>
     </div>
-    <p class="canvas-hint" id="zones-note"></p>
+    <p class="zones-note" id="zones-note"></p>
   </section>
 
 </main>
