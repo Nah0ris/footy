@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Interactive xG and xGOT football analytics tool using StatsBomb World Cup 2022 data." />
+  <title>xG Explorer · WC 2022</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="brand">
+    <div class="brand-logo">
+      <span class="brand-xg">xG</span><span class="brand-slash">/</span><span class="brand-xgot">xGOT</span>
+    </div>
+    <p class="brand-sub">WC 2022 · StatsBomb</p>
+  </div>
+
+  <ul class="menu" role="menubar">
+    <li class="menu-item active" data-panel="panel-xg" role="menuitem" tabindex="0" id="nav-xg">
+      <span class="menu-icon">⚽</span><span class="menu-label">Shot xG</span>
+    </li>
+    <li class="menu-item" data-panel="panel-xgot" role="menuitem" tabindex="0" id="nav-xgot">
+      <span class="menu-icon">🎯</span><span class="menu-label">Shot xGOT</span>
+    </li>
+    <li class="menu-item" data-panel="panel-player" role="menuitem" tabindex="0" id="nav-player">
+      <span class="menu-icon">👤</span><span class="menu-label">Player Stats</span>
+    </li>
+    <li class="menu-item" data-panel="panel-teams" role="menuitem" tabindex="0" id="nav-teams">
+      <span class="menu-icon">🏆</span><span class="menu-label">Team Table</span>
+    </li>
+    <li class="menu-item" data-panel="panel-zones" role="menuitem" tabindex="0" id="nav-zones">
+      <span class="menu-icon">🗺️</span><span class="menu-label">Zone Map</span>
+    </li>
+  </ul>
+
+  <div class="sidebar-footer">World Cup 2022 · Open Data</div>
+</nav>
+
+<!-- ── MAIN CONTENT ─────────────────────────────────────────────────────── -->
+<main id="main">
+
+  <!-- 1 · SHOT xG -->
+  <section id="panel-xg" class="panel active">
+    <header class="panel-header">
+      <h1 class="panel-title">Shot xG <span class="tag">Expected Goals</span></h1>
+      <p class="panel-desc">Click anywhere on the pitch to place a shot. The model estimates its probability of becoming a goal based on angle and distance.</p>
+    </header>
+
+    <div class="canvas-wrap" id="xg-canvas-wrap">
+      <canvas id="pitch-canvas" width="700" height="430"></canvas>
+      <p class="canvas-hint">Click on the pitch to place a shot →</p>
+    </div>
+
+    <div id="xg-result" class="result-card hidden">
+      <div class="result-grid">
+        <div class="result-item accent">
+          <span class="result-label">xG</span>
+          <span class="result-value mono" id="xg-val">—</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Probability</span>
+          <span class="result-value mono" id="xg-pct">—</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Angle</span>
+          <span class="result-value mono" id="xg-angle">—</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Distance</span>
+          <span class="result-value mono" id="xg-dist">—</span>
+        </div>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" id="xg-bar"></div>
+        <span class="bar-label" id="xg-bar-label"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · SHOT xGOT -->
+  <section id="panel-xgot" class="panel">
+    <header class="panel-header">
+      <h1 class="panel-title">Shot xGOT <span class="tag">Expected Goals on Target</span></h1>
+      <p class="panel-desc">Click inside the goal frame to see the probability of beating the goalkeeper, based on shot placement.</p>
+    </header>
+
+    <div class="canvas-wrap" id="xgot-canvas-wrap">
+      <canvas id="goal-canvas" width="560" height="220"></canvas>
+      <p class="canvas-hint">Click inside the goal frame →</p>
+    </div>
+
+    <div id="xgot-result" class="result-card hidden">
+      <div class="result-grid">
+        <div class="result-item accent">
+          <span class="result-label">xGOT</span>
+          <span class="result-value mono" id="xgot-val">—</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Probability</span>
+          <span class="result-value mono" id="xgot-pct">—</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Zone</span>
+          <span class="result-value mono" id="xgot-zone">—</span>
+        </div>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" id="xgot-bar"></div>
+        <span class="bar-label" id="xgot-bar-label"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · PLAYER STATS -->
+  <section id="panel-player" class="panel">
+    <header class="panel-header">
+      <h1 class="panel-title">Player Stats <span class="tag">xG · xGOT · Goals</span></h1>
+      <p class="panel-desc">Search a player from WC 2022 to see their shot map and expected vs actual performance.</p>
+    </header>
+
+    <div class="search-wrap">
+      <input type="text" id="player-input" class="search-input" placeholder="Search player name…" autocomplete="off" />
+      <ul id="player-suggestions" class="suggestions hidden"></ul>
+    </div>
+
+    <div id="player-result" class="hidden">
+      <div class="stat-grid" id="player-stat-grid"></div>
+      <div class="canvas-wrap" style="margin-top: 1.5rem;">
+        <canvas id="player-goal-canvas" width="560" height="220"></canvas>
+        <p class="canvas-hint">Circles = Goals · ✕ = Saved / Off Target · Size ∝ xG</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · TEAM TABLE -->
+  <section id="panel-teams" class="panel">
+    <header class="panel-header">
+      <h1 class="panel-title">Team Table <span class="tag">Over / Under Performers</span></h1>
+      <p class="panel-desc">All 32 WC 2022 teams ranked by xG difference (Actual Goals − xG). Positive = over-performed expectations.</p>
+    </header>
+
+    <div class="controls-row">
+      <label class="control-label">Sort by</label>
+      <select id="teams-sort" class="select-input">
+        <option value="difference">xG Difference</option>
+        <option value="total_xg">Total xG</option>
+        <option value="total_goals">Total Goals</option>
+        <option value="total_shots">Total Shots</option>
+      </select>
+      <select id="teams-order" class="select-input">
+        <option value="desc">Highest first</option>
+        <option value="asc">Lowest first</option>
+      </select>
+      <button id="teams-load-btn" class="btn">Load</button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="teams-table" class="data-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Team</th><th>Shots</th><th>Goals</th><th>xG</th><th>Difference</th>
+          </tr>
+        </thead>
+        <tbody id="teams-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 5 · ZONE MAP -->
+  <section id="panel-zones" class="panel">
+    <header class="panel-header">
+      <h1 class="panel-title">Zone Map <span class="tag">Conversion Rates</span></h1>
+      <p class="panel-desc">Goal-frame heat map showing conversion rate per zone across the entire tournament.</p>
+    </header>
+
+    <button id="zones-load-btn" class="btn">Load Zone Data</button>
+
+    <div class="canvas-wrap" style="margin-top: 1.5rem;">
+      <canvas id="zones-canvas" width="560" height="220"></canvas>
+    </div>
+    <p class="canvas-hint" id="zones-note"></p>
+  </section>
+
+</main>
+
+<script src="/static/app.js"></script>
+<script src="/static/pitch.js"></script>
+<script src="/static/goal.js"></script>
+<script src="/static/player.js"></script>
+<script src="/static/teams.js"></script>
+<script src="/static/zones.js"></script>
+</body>
+</html>
