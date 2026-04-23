@@ -673,3 +673,409 @@ html, body {
 .hidden { display: none !important; }
 .mt-sm  { margin-top: 0.75rem; }
 .mt-md  { margin-top: 1.25rem; }
+
+/* ── Match Predictor ─────────────────────────────────────────────────────── */
+
+.pred-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  width: fit-content;
+}
+
+.pred-tab {
+  padding: 0.55rem 1.4rem;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  background: var(--bg-card);
+  color: var(--text-sec);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.pred-tab:not(:last-child) { border-right: 1px solid var(--border); }
+.pred-tab-active { background: var(--accent); color: #fff; }
+
+.pred-search-wrap {
+  position: relative;
+  max-width: 420px;
+  margin-bottom: 1rem;
+}
+
+.pred-results-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 60;
+}
+
+.pred-player-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+  transition: background var(--transition);
+}
+
+.pred-player-row:last-child { border-bottom: none; }
+.pred-player-row:hover { background: var(--accent-lt); }
+
+.pred-player-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.pred-player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pred-player-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pred-player-meta {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.pred-player-ovr {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.pred-no-result {
+  padding: 0.9rem 1rem;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.pred-error {
+  background: var(--negative-bg);
+  color: var(--negative);
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-bottom: 0.85rem;
+}
+
+/* Lineup builder */
+.pred-builder {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.pred-divider { background: var(--border); }
+
+.pred-team-col { min-width: 0; }
+
+.pred-lineup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.pred-lineup-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.pred-lineup-count {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.pred-lineup-count.complete { color: var(--positive); border-color: var(--positive); background: var(--positive-bg); }
+
+.pred-role-group { margin-bottom: 0.5rem; }
+
+.pred-role-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-dim);
+  padding: 0.2rem 0;
+  margin-bottom: 0.2rem;
+}
+
+.pred-lineup-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.65rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 4px;
+  transition: background var(--transition);
+}
+
+.pred-lineup-card:hover { background: var(--bg-hover); }
+
+.pred-lineup-img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.pred-lineup-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.pred-lineup-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pred-lineup-pos {
+  font-size: 0.67rem;
+  color: var(--text-dim);
+}
+
+.pred-lineup-ovr {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.pred-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: all var(--transition);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.pred-remove-btn:hover { background: var(--negative-bg); color: var(--negative); }
+
+.pred-lineup-empty {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.pred-action { margin-bottom: 1.25rem; }
+
+/* Prediction result */
+.pred-result-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  max-width: 760px;
+  animation: fadeUp 0.3s ease;
+}
+
+.pred-result-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-dim);
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 1rem;
+}
+
+.pred-xg-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.25rem;
+}
+
+.pred-xg-item { text-align: center; }
+
+.pred-xg-label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.pred-xg-val {
+  font-family: var(--mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.pred-xg-vs {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.pred-prob-section { margin-bottom: 1.25rem; }
+
+.pred-prob-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.pred-prob-label {
+  width: 70px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-sec);
+  flex-shrink: 0;
+}
+
+.pred-prob-track {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pred-prob-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bar-home { background: linear-gradient(90deg, #1a56db, #5b8ff9); }
+.bar-draw { background: linear-gradient(90deg, #b45309, #f59e0b); }
+.bar-away { background: linear-gradient(90deg, #c0392b, #ef4444); }
+
+.pred-prob-pct {
+  width: 42px;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.pred-scores-section {}
+.pred-scores-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 0.65rem;
+}
+
+.pred-score-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.45rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+
+.pred-score-row.top {
+  background: var(--accent-lt);
+}
+
+.pred-score-val {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.pred-score-row.top .pred-score-val { color: var(--accent); }
+
+.pred-score-bar-wrap {
+  flex: 1;
+  height: 5px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pred-score-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.pred-score-pct {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+

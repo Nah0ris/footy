@@ -4,15 +4,17 @@ Flask backend — API routes only.
 Data loading and model training happen once at startup.
 """
 
+import os
 import pandas as pd
 from flask import Flask, jsonify, request, render_template
 
-from data_loader import load_all_data, collect_shots, collect_shots_with_player
-from models      import train_xg_model, train_xgot_model, predict_xg, predict_xgot
-from utils       import (
+from data_loader     import load_all_data, collect_shots, collect_shots_with_player
+from models          import train_xg_model, train_xgot_model, predict_xg, predict_xgot
+from utils           import (
     calculate_angle, calculate_distance, safe_float,
     GOAL_Y_MIN, GOAL_Y_MAX, GOAL_HEIGHT,
 )
+from match_predictor import validate_lineup, simulate_match, POSITION_ROLE
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
@@ -56,6 +58,10 @@ team_summary = df_shot_player.groupby("team_name").agg(
 team_summary["difference"] = (
     team_summary["total_goals"] - team_summary["total_xg"]
 )
+
+# ── FUT22 player data ────────────────────────────────────────────────────
+_FUT_CSV = os.path.join(os.path.dirname(__file__), "fut22players.csv")
+df_fut = pd.read_csv(_FUT_CSV) if os.path.exists(_FUT_CSV) else pd.DataFrame()
 
 print("Ready!\n")
 
@@ -186,6 +192,59 @@ def api_zones():
             "conversion": round(goals / total * 100, 1) if total else 0,
         }
     return jsonify({"zones": zones})
+
+
+# 6 · FUT22 player search
+@app.route("/api/fut_players", methods=["GET"])
+def api_fut_players():
+    q   = request.args.get("q", "").strip().lower()
+    pos = request.args.get("pos", "").strip().upper()   # optional position filter
+
+    if df_fut.empty:
+        return jsonify({"players": []})
+
+    df = df_fut.copy()
+    if q:
+        df = df[df["player_name"].str.lower().str.contains(q, na=False)]
+    if pos:
+        df = df[df["position"] == pos]
+
+    df = df.sort_values("overall", ascending=False).head(20)
+    players = []
+    for _, r in df.iterrows():
+        players.append({
+            "name":     r["player_name"],
+            "image":    r["player_image"],
+            "position": r["position"],
+            "overall":  int(r["overall"]),
+            "club":     r.get("club", ""),
+            "pace":       int(r.get("pace", 0)),
+            "shooting":   int(r.get("shooting", 0)),
+            "passing":    int(r.get("passing", 0)),
+            "dribbling":  int(r.get("dribbling", 0)),
+            "defending":  int(r.get("defending", 0)),
+            "physicality":int(r.get("physicality", 0)),
+        })
+    return jsonify({"players": players})
+
+
+# 7 · Match prediction
+@app.route("/api/predict_match", methods=["POST"])
+def api_predict_match():
+    data = request.json
+    home = data.get("home", [])
+    away = data.get("away", [])
+
+    ok_h, err_h = validate_lineup(home)
+    if not ok_h:
+        return jsonify({"error": f"Home team: {err_h}"}), 400
+
+    ok_a, err_a = validate_lineup(away)
+    if not ok_a:
+        return jsonify({"error": f"Away team: {err_a}"}), 400
+
+    result = simulate_match(home, away)
+    return jsonify(result)
 
 
 if __name__ == "__main__":

@@ -48,6 +48,10 @@
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         <span class="menu-label">Zone Map</span>
       </li>
+      <li class="menu-item" data-panel="panel-predictor" role="menuitem" id="nav-predictor">
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+        <span class="menu-label">Match Predictor</span>
+      </li>
     </ul>
     <div class="sidebar-footer">StatsBomb Open Data</div>
   </div>
@@ -241,6 +245,82 @@
       <canvas id="zones-canvas" width="560" height="220"></canvas>
     </div>
     <p class="zones-note" id="zones-note"></p>
+  <!-- 6 · Match Predictor -->
+  <section id="panel-predictor" class="panel">
+    <div class="panel-header">
+      <h1 class="panel-title">Match Predictor <span class="tag">AI Simulation</span></h1>
+      <p class="panel-desc">Build lineups for both teams using FUT22 players, then run a Poisson-based match simulation to get win probabilities and likely scorelines.</p>
+    </div>
+
+    <!-- Team tabs -->
+    <div class="pred-tabs">
+      <button class="pred-tab pred-tab-active" id="pred-tab-home">Home Team</button>
+      <button class="pred-tab" id="pred-tab-away">Away Team</button>
+    </div>
+
+    <!-- Search bar -->
+    <div class="pred-search-wrap">
+      <input type="text" id="pred-search" class="search-input" placeholder="Search player for Home team..." autocomplete="off" />
+      <div id="pred-search-results" class="pred-results-dropdown"></div>
+    </div>
+
+    <!-- Error box -->
+    <div id="pred-error" class="pred-error hidden"></div>
+
+    <!-- Lineup builder -->
+    <div class="pred-builder">
+      <div class="pred-team-col" id="pred-home-lineup"></div>
+      <div class="pred-divider"></div>
+      <div class="pred-team-col" id="pred-away-lineup"></div>
+    </div>
+
+    <!-- Predict button -->
+    <div class="pred-action">
+      <button id="pred-btn" class="btn">Run Prediction</button>
+    </div>
+
+    <!-- Result -->
+    <div id="pred-result" class="pred-result-box hidden">
+      <div class="pred-result-header">Match Simulation Result</div>
+
+      <!-- xG row -->
+      <div class="pred-xg-row">
+        <div class="pred-xg-item">
+          <span class="pred-xg-label">Home xG</span>
+          <span class="pred-xg-val" id="pred-home-xg">—</span>
+        </div>
+        <div class="pred-xg-vs">vs</div>
+        <div class="pred-xg-item">
+          <span class="pred-xg-label">Away xG</span>
+          <span class="pred-xg-val" id="pred-away-xg">—</span>
+        </div>
+      </div>
+
+      <!-- Win probability bars -->
+      <div class="pred-prob-section">
+        <div class="pred-prob-row">
+          <span class="pred-prob-label">Home Win</span>
+          <div class="pred-prob-track"><div class="pred-prob-fill bar-home" id="pred-home-prob"></div></div>
+          <span class="pred-prob-pct" id="pred-home-prob-val">—</span>
+        </div>
+        <div class="pred-prob-row">
+          <span class="pred-prob-label">Draw</span>
+          <div class="pred-prob-track"><div class="pred-prob-fill bar-draw" id="pred-draw-prob"></div></div>
+          <span class="pred-prob-pct" id="pred-draw-prob-val">—</span>
+        </div>
+        <div class="pred-prob-row">
+          <span class="pred-prob-label">Away Win</span>
+          <div class="pred-prob-track"><div class="pred-prob-fill bar-away" id="pred-away-prob"></div></div>
+          <span class="pred-prob-pct" id="pred-away-prob-val">—</span>
+        </div>
+      </div>
+
+      <!-- Likely scorelines -->
+      <div class="pred-scores-section">
+        <div class="pred-scores-title">Most Likely Scorelines</div>
+        <div id="pred-scorelines"></div>
+      </div>
+    </div>
   </section>
 
 </main>
@@ -251,5 +331,6 @@
 <script src="/static/player.js"></script>
 <script src="/static/teams.js"></script>
 <script src="/static/zones.js"></script>
+<script src="/static/predictor.js"></script>
 </body>
 </html>
