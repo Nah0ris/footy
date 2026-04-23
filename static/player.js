@@ -1,5 +1,5 @@
 /**
- * player.js — Player search (WC 2022 stats) + FUT22 player image in avatar.
+ * player.js — Player search (WC 2022 stats) + StatsBomb squad mapping.
  */
 
 (function () {
@@ -42,7 +42,7 @@
     // ── Load & Render ────────────────────────────────────────────────────────
     async function loadPlayer(name) {
         if (!name) return;
-        const [statsData, futData] = await Promise.all([
+        const [statsData, squadData] = await Promise.all([
             apiGet(`/api/player?name=${encodeURIComponent(name)}`),
             apiGet(`/api/fut_players?q=${encodeURIComponent(name)}`),
         ]);
@@ -53,28 +53,20 @@
         // Shot map
         drawGoalFrame('player-goal-canvas', statsData.shots);
 
-        // Player avatar — use FUT22 image if found, else initials
+        // Player avatar — no images in StatsBomb data, so use initials
         const avatarEl = document.getElementById('player-avatar');
-        const futMatch = futData.players && futData.players.length > 0 ? futData.players[0] : null;
+        avatarEl.innerHTML = '';
+        avatarEl.style.background = 'rgba(255,255,255,0.2)';
+        avatarEl.style.border = '2px solid rgba(255,255,255,0.3)';
+        avatarEl.textContent = initials(name);
 
-        if (futMatch && futMatch.image) {
-            // Replace div with an img
-            avatarEl.innerHTML = '';
-            avatarEl.style.background = 'transparent';
-            avatarEl.style.border = 'none';
-            const img = document.createElement('img');
-            img.src    = futMatch.image;
-            img.alt    = name;
-            img.style.cssText = 'width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.4);flex-shrink:0;';
-            img.onerror = () => { avatarEl.textContent = initials(name); avatarEl.style.background = 'rgba(255,255,255,0.2)'; };
-            avatarEl.appendChild(img);
-        } else {
-            avatarEl.textContent = initials(name);
-        }
+        const playerMatch = squadData.players && squadData.players.length > 0 
+            ? squadData.players.find(p => p.name === name) || squadData.players[0]
+            : null;
 
         document.getElementById('player-name-display').textContent = name;
         document.getElementById('player-team-display').textContent  =
-            futMatch ? `${futMatch.position} · ${futMatch.club}` : '';
+            playerMatch ? `${playerMatch.position} · ${playerMatch.club}` : '';
 
         // Stats rows
         const diff      = statsData.difference;
@@ -90,11 +82,10 @@
             { label: 'Goals vs xG',         value: `${diffSign}${diff}`, cls: diffClass },
         ];
 
-        if (futMatch) {
+        if (playerMatch) {
             stats.push(
-                { label: 'FUT Overall',  value: futMatch.overall },
-                { label: 'Shooting',     value: futMatch.shooting },
-                { label: 'Pace',         value: futMatch.pace },
+                { label: 'Market Rating',  value: playerMatch.overall },
+                { label: 'Role',           value: playerMatch.position },
             );
         }
 

@@ -9,11 +9,12 @@ from scipy.stats import poisson
 
 
 # ── Position role mapping ──────────────────────────────────────────────────
+# The data loader already simplifies StatsBomb positions to these four roles
 POSITION_ROLE = {
     "GK":  "GK",
-    "CB":  "DEF", "LB":  "DEF", "RB":  "DEF", "LWB": "DEF", "RWB": "DEF",
-    "CM":  "MID", "CAM": "MID", "CDM": "MID", "LM":  "MID", "RM":  "MID",
-    "ST":  "FWD", "CF":  "FWD", "LW":  "FWD", "RW":  "FWD", "LF":  "FWD",
+    "DEF": "DEF",
+    "MID": "MID",
+    "FWD": "FWD",
 }
 
 VALID_POSITIONS = set(POSITION_ROLE.keys())

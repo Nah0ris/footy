@@ -70,3 +70,58 @@ def collect_shots_with_player(df_match, df_matches):
     df["distance"] = df.apply(lambda r: calculate_distance(r["x"], r["y"]), axis=1)
     df["goal"]     = (df["outcome_name"] == "Goal").astype(int)
     return df
+
+
+# ── StatsBomb position → simplified role ──────────────────────────────────
+_POSITION_MAP = {
+    "Goalkeeper":                "GK",
+    "Right Back":               "DEF",
+    "Right Center Back":        "DEF",
+    "Center Back":              "DEF",
+    "Left Center Back":         "DEF",
+    "Left Back":                "DEF",
+    "Right Wing Back":          "DEF",
+    "Left Wing Back":           "DEF",
+    "Right Defensive Midfield": "MID",
+    "Left Defensive Midfield":  "MID",
+    "Center Defensive Midfield":"MID",
+    "Right Center Midfield":    "MID",
+    "Center Midfield":          "MID",
+    "Left Center Midfield":     "MID",
+    "Right Midfield":           "MID",
+    "Left Midfield":            "MID",
+    "Center Attacking Midfield":"MID",
+    "Right Attacking Midfield": "MID",
+    "Left Attacking Midfield":  "MID",
+    "Right Wing":               "FWD",
+    "Left Wing":                "FWD",
+    "Right Center Forward":     "FWD",
+    "Left Center Forward":      "FWD",
+    "Center Forward":           "FWD",
+    "Striker":                  "FWD",
+    "Secondary Striker":        "FWD",
+}
+
+
+def collect_squads(df_match, df_matches):
+    """
+    Extract every unique (player, team, position) from WC 2022 events.
+    Returns a DataFrame with columns:
+        player_name, team_name, position, role
+    """
+    rows = []
+    for match_id in df_match["match_id"]:
+        ev = df_matches[match_id]["event"]
+        # Only events with player and team
+        sub = ev[ev["player_name"].notna() & ev["team_name"].notna()]
+        for _, r in sub[["player_name", "team_name", "position_name"]].drop_duplicates().iterrows():
+            rows.append({
+                "player_name":  r["player_name"],
+                "team_name":    r["team_name"],
+                "position_name": r.get("position_name", ""),
+            })
+
+    df = pd.DataFrame(rows).drop_duplicates(subset=["player_name", "team_name"])
+    df["role"] = df["position_name"].map(_POSITION_MAP).fillna("MID")
+    return df.sort_values(["team_name", "role", "player_name"]).reset_index(drop=True)
+

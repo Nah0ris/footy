@@ -121,7 +121,7 @@
     <div class="xgot-layout">
       <!-- Left: Goal Canvas -->
       <div class="canvas-wrap">
-        <canvas id="goal-canvas" width="560" height="220"></canvas>
+        <canvas id="goal-canvas" width="720" height="280"></canvas>
         <p class="canvas-hint">Click inside the goal frame</p>
       </div>
 
@@ -175,7 +175,7 @@
         <!-- Left: Shot Map -->
         <div>
           <div class="canvas-wrap">
-            <canvas id="player-goal-canvas" width="560" height="220"></canvas>
+            <canvas id="player-goal-canvas" width="720" height="280"></canvas>
             <p class="canvas-hint">Filled circle = Goal &nbsp;|&nbsp; Cross = No goal &nbsp;|&nbsp; Size proportional to xG</p>
           </div>
         </div>
@@ -241,15 +241,17 @@
       <button id="zones-load-btn" class="btn">Load Zone Data</button>
     </div>
 
-    <div class="canvas-wrap" style="display:inline-block;">
-      <canvas id="zones-canvas" width="560" height="220"></canvas>
+    <div class="canvas-wrap">
+      <canvas id="zones-canvas" width="800" height="320"></canvas>
     </div>
     <p class="zones-note" id="zones-note"></p>
+  </section>
+
   <!-- 6 · Match Predictor -->
   <section id="panel-predictor" class="panel">
     <div class="panel-header">
       <h1 class="panel-title">Match Predictor <span class="tag">AI Simulation</span></h1>
-      <p class="panel-desc">Build lineups for both teams using FUT22 players, then run a Poisson-based match simulation to get win probabilities and likely scorelines.</p>
+      <p class="panel-desc">Select a country, pick players from its squad, or search WC 2022 players directly.</p>
     </div>
 
     <!-- Team tabs -->
@@ -258,11 +260,21 @@
       <button class="pred-tab" id="pred-tab-away">Away Team</button>
     </div>
 
-    <!-- Search bar -->
-    <div class="pred-search-wrap">
-      <input type="text" id="pred-search" class="search-input" placeholder="Search player for Home team..." autocomplete="off" />
-      <div id="pred-search-results" class="pred-results-dropdown"></div>
+    <!-- Country selector + search row -->
+    <div class="pred-controls-row">
+      <select id="pred-country" class="select-input" style="min-width:180px;">
+        <option value="">Select Country...</option>
+      </select>
+      <button id="pred-load-squad" class="btn btn-outline">Load Squad</button>
+      <span class="pred-or">or</span>
+      <div class="pred-search-wrap" style="margin-bottom:0;">
+        <input type="text" id="pred-search" class="search-input" placeholder="Search any WC 2022 player..." autocomplete="off" />
+        <div id="pred-search-results" class="pred-results-dropdown"></div>
+      </div>
     </div>
+
+    <!-- Squad list (shows after Load Squad) -->
+    <div id="pred-squad-list" class="pred-squad-list hidden"></div>
 
     <!-- Error box -->
     <div id="pred-error" class="pred-error hidden"></div>
@@ -282,40 +294,16 @@
     <!-- Result -->
     <div id="pred-result" class="pred-result-box hidden">
       <div class="pred-result-header">Match Simulation Result</div>
-
-      <!-- xG row -->
       <div class="pred-xg-row">
-        <div class="pred-xg-item">
-          <span class="pred-xg-label">Home xG</span>
-          <span class="pred-xg-val" id="pred-home-xg">—</span>
-        </div>
+        <div class="pred-xg-item"><span class="pred-xg-label">Home xG</span><span class="pred-xg-val" id="pred-home-xg">—</span></div>
         <div class="pred-xg-vs">vs</div>
-        <div class="pred-xg-item">
-          <span class="pred-xg-label">Away xG</span>
-          <span class="pred-xg-val" id="pred-away-xg">—</span>
-        </div>
+        <div class="pred-xg-item"><span class="pred-xg-label">Away xG</span><span class="pred-xg-val" id="pred-away-xg">—</span></div>
       </div>
-
-      <!-- Win probability bars -->
       <div class="pred-prob-section">
-        <div class="pred-prob-row">
-          <span class="pred-prob-label">Home Win</span>
-          <div class="pred-prob-track"><div class="pred-prob-fill bar-home" id="pred-home-prob"></div></div>
-          <span class="pred-prob-pct" id="pred-home-prob-val">—</span>
-        </div>
-        <div class="pred-prob-row">
-          <span class="pred-prob-label">Draw</span>
-          <div class="pred-prob-track"><div class="pred-prob-fill bar-draw" id="pred-draw-prob"></div></div>
-          <span class="pred-prob-pct" id="pred-draw-prob-val">—</span>
-        </div>
-        <div class="pred-prob-row">
-          <span class="pred-prob-label">Away Win</span>
-          <div class="pred-prob-track"><div class="pred-prob-fill bar-away" id="pred-away-prob"></div></div>
-          <span class="pred-prob-pct" id="pred-away-prob-val">—</span>
-        </div>
+        <div class="pred-prob-row"><span class="pred-prob-label">Home Win</span><div class="pred-prob-track"><div class="pred-prob-fill bar-home" id="pred-home-prob"></div></div><span class="pred-prob-pct" id="pred-home-prob-val">—</span></div>
+        <div class="pred-prob-row"><span class="pred-prob-label">Draw</span><div class="pred-prob-track"><div class="pred-prob-fill bar-draw" id="pred-draw-prob"></div></div><span class="pred-prob-pct" id="pred-draw-prob-val">—</span></div>
+        <div class="pred-prob-row"><span class="pred-prob-label">Away Win</span><div class="pred-prob-track"><div class="pred-prob-fill bar-away" id="pred-away-prob"></div></div><span class="pred-prob-pct" id="pred-away-prob-val">—</span></div>
       </div>
-
-      <!-- Likely scorelines -->
       <div class="pred-scores-section">
         <div class="pred-scores-title">Most Likely Scorelines</div>
         <div id="pred-scorelines"></div>

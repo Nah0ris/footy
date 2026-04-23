@@ -53,6 +53,7 @@ html, body {
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
+  overflow: hidden;
 }
 
 /* ── Top Header Bar ─────────────────────────────────────────────────────── */
@@ -193,8 +194,8 @@ html, body {
 #main {
   margin-left: var(--sidebar-w);
   margin-top: var(--header-h);
-  min-height: calc(100vh - var(--header-h));
-  padding: 1.5rem 2rem;
+  height: calc(100vh - var(--header-h));
+  padding: 1.25rem 1.75rem;
   transition: margin-left 0.25s ease;
   overflow-y: auto;
 }
@@ -247,14 +248,14 @@ html, body {
 
 .xg-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: 1.25rem;
   align-items: start;
 }
 
 .xgot-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: 1.25rem;
   align-items: start;
 }
@@ -292,7 +293,8 @@ html, body {
 .canvas-wrap canvas {
   display: block;
   cursor: crosshair;
-  max-width: 100%;
+  width: 100%;
+  height: auto;
 }
 
 .canvas-hint {
@@ -733,13 +735,18 @@ html, body {
 .pred-player-row:last-child { border-bottom: none; }
 .pred-player-row:hover { background: var(--accent-lt); }
 
-.pred-player-img {
+.pred-player-avatar-sm {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  object-fit: cover;
   background: var(--bg);
   border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-dim);
   flex-shrink: 0;
 }
 
@@ -857,13 +864,18 @@ html, body {
 
 .pred-lineup-card:hover { background: var(--bg-hover); }
 
-.pred-lineup-img {
+.pred-lineup-avatar {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  object-fit: cover;
   background: var(--bg);
   border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-dim);
   flex-shrink: 0;
 }
 
@@ -1078,4 +1090,109 @@ html, body {
   text-align: right;
   flex-shrink: 0;
 }
+
+/* ── Predictor Controls Row ──────────────────────────────────────────────── */
+
+.pred-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.pred-or {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* ── Squad Grid ──────────────────────────────────────────────────────────── */
+
+.pred-squad-list {
+  margin-bottom: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.pred-squad-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 0.6rem;
+}
+
+.pred-squad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.5rem;
+}
+
+.pred-squad-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.35rem;
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: center;
+}
+
+.pred-squad-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-lt);
+  transform: translateY(-1px);
+}
+
+.pred-squad-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.pred-squad-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+.pred-squad-meta {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+}
+
+/* ── Zones canvas enlarged ───────────────────────────────────────────────── */
+
+#panel-zones .canvas-wrap {
+  display: block;
+  max-width: 100%;
+}
+
+#panel-zones .canvas-wrap canvas {
+  width: 100%;
+  height: auto;
+}
+
 

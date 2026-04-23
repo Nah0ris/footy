@@ -5,10 +5,11 @@ Data loading and model training happen once at startup.
 """
 
 import os
+import numpy as np
 import pandas as pd
 from flask import Flask, jsonify, request, render_template
 
-from data_loader     import load_all_data, collect_shots, collect_shots_with_player
+from data_loader     import load_all_data, collect_shots, collect_shots_with_player, collect_squads
 from models          import train_xg_model, train_xgot_model, predict_xg, predict_xgot
 from utils           import (
     calculate_angle, calculate_distance, safe_float,
@@ -59,9 +60,33 @@ team_summary["difference"] = (
     team_summary["total_goals"] - team_summary["total_xg"]
 )
 
-# ── FUT22 player data ────────────────────────────────────────────────────
-_FUT_CSV = os.path.join(os.path.dirname(__file__), "fut22players.csv")
-df_fut = pd.read_csv(_FUT_CSV) if os.path.exists(_FUT_CSV) else pd.DataFrame()
+# ── WC 2022 squad data ───────────────────────────────────────────────────
+df_squads = collect_squads(df_match, df_matches)
+
+# Load transfers.csv for market values (used as rating proxy)
+_TRANSFERS_CSV = os.path.join(os.path.dirname(__file__), "transfers.csv")
+if os.path.exists(_TRANSFERS_CSV):
+    df_transfers = pd.read_csv(_TRANSFERS_CSV)
+    # Keep latest market value per player
+    _mv = (df_transfers.dropna(subset=["market_value_in_eur"])
+           .sort_values("transfer_date", ascending=False)
+           .drop_duplicates(subset=["player_name"], keep="first")
+           [["player_name", "market_value_in_eur"]])
+    df_squads = df_squads.merge(_mv, on="player_name", how="left")
+else:
+    df_squads["market_value_in_eur"] = None
+
+# Convert market value to 1-99 rating (log scale)
+_mv_vals = df_squads["market_value_in_eur"].dropna()
+if len(_mv_vals) > 0:
+    _log_min = np.log1p(_mv_vals.min())
+    _log_max = np.log1p(_mv_vals.max())
+    df_squads["rating"] = df_squads["market_value_in_eur"].apply(
+        lambda v: int(50 + 49 * (np.log1p(v) - _log_min) / max(_log_max - _log_min, 1))
+        if pd.notna(v) else 70
+    )
+else:
+    df_squads["rating"] = 70
 
 print("Ready!\n")
 
@@ -194,38 +219,16 @@ def api_zones():
     return jsonify({"zones": zones})
 
 
-# 6 · FUT22 player search
+# 6 · Player search (WC 2022 squads)
 @app.route("/api/fut_players", methods=["GET"])
 def api_fut_players():
-    q   = request.args.get("q", "").strip().lower()
-    pos = request.args.get("pos", "").strip().upper()   # optional position filter
-
-    if df_fut.empty:
+    q = request.args.get("q", "").strip().lower()
+    if not q or len(q) < 2:
         return jsonify({"players": []})
 
-    df = df_fut.copy()
-    if q:
-        df = df[df["player_name"].str.lower().str.contains(q, na=False)]
-    if pos:
-        df = df[df["position"] == pos]
-
-    df = df.sort_values("overall", ascending=False).head(20)
-    players = []
-    for _, r in df.iterrows():
-        players.append({
-            "name":     r["player_name"],
-            "image":    r["player_image"],
-            "position": r["position"],
-            "overall":  int(r["overall"]),
-            "club":     r.get("club", ""),
-            "pace":       int(r.get("pace", 0)),
-            "shooting":   int(r.get("shooting", 0)),
-            "passing":    int(r.get("passing", 0)),
-            "dribbling":  int(r.get("dribbling", 0)),
-            "defending":  int(r.get("defending", 0)),
-            "physicality":int(r.get("physicality", 0)),
-        })
-    return jsonify({"players": players})
+    df = df_squads[df_squads["player_name"].str.lower().str.contains(q, na=False)]
+    df = df.sort_values("rating", ascending=False).head(20)
+    return jsonify({"players": _squad_to_list(df)})
 
 
 # 7 · Match prediction
@@ -245,6 +248,44 @@ def api_predict_match():
 
     result = simulate_match(home, away)
     return jsonify(result)
+
+
+# 8 · Country list (WC 2022 teams)
+@app.route("/api/countries", methods=["GET"])
+def api_countries():
+    countries = sorted(df_squads["team_name"].unique().tolist())
+    return jsonify({"countries": countries})
+
+
+# 9 · National squad
+@app.route("/api/squad", methods=["GET"])
+def api_squad():
+    country = request.args.get("country", "").strip()
+    if not country:
+        return jsonify({"players": []})
+
+    df = df_squads[df_squads["team_name"] == country].sort_values("rating", ascending=False)
+    return jsonify({"players": _squad_to_list(df)})
+
+
+def _squad_to_list(df):
+    """Convert squad DataFrame rows to JSON-friendly dicts."""
+    players = []
+    for _, r in df.iterrows():
+        players.append({
+            "name":     r["player_name"],
+            "position": r["role"],        # GK / DEF / MID / FWD
+            "overall":  int(r["rating"]),
+            "club":     r["team_name"],
+            "image":    "",               # no images for StatsBomb data
+            "shooting":   int(r["rating"]) if r["role"] == "FWD" else max(50, int(r["rating"]) - 10),
+            "passing":    int(r["rating"]) if r["role"] == "MID" else max(50, int(r["rating"]) - 5),
+            "defending":  int(r["rating"]) if r["role"] == "DEF" else max(40, int(r["rating"]) - 15),
+            "pace":       int(r["rating"]),
+            "dribbling":  int(r["rating"]),
+            "physicality":int(r["rating"]),
+        })
+    return players
 
 
 if __name__ == "__main__":
